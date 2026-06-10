@@ -52,6 +52,18 @@ public class BookService : IBookService
 
     public async Task<BookDto> CreateBookAsync(CreateBookDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Title))
+            throw new InvalidOperationException("Title is required.");
+
+        if (string.IsNullOrWhiteSpace(dto.Author))
+            throw new InvalidOperationException("Author is required.");
+
+        if (dto.ISBN == null || dto.ISBN.Length != 13 || !dto.ISBN.All(char.IsDigit))
+            throw new InvalidOperationException("ISBN must be exactly 13 digits.");
+
+        if (dto.TotalCopies < 1)
+            throw new InvalidOperationException("TotalCopies must be at least 1.");
+
         var existing = await _bookRepository.GetByISBNAsync(dto.ISBN);
         if (existing != null)
             throw new InvalidOperationException("A book with this ISBN already exists.");
