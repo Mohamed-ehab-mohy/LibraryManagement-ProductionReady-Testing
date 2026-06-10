@@ -8,6 +8,7 @@
     <Project Path="tests/LibraryManagement.ArchitectureTests/LibraryManagement.ArchitectureTests.csproj" />
     <Project Path="tests/LibraryManagement.IntegrationTests/LibraryManagement.IntegrationTests.csproj" />
     <Project Path="tests/LibraryManagement.LoadTests/LibraryManagement.LoadTests.csproj" />
+    <Project Path="tests/LibraryManagement.ScratchTests/LibraryManagement.ScratchTests.csproj" />
     <Project Path="tests/LibraryManagement.UnitTests/LibraryManagement.UnitTests.csproj" />
   </Folder>
 </Solution>

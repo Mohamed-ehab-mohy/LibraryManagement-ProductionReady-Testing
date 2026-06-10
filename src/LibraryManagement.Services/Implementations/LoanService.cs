@@ -84,8 +84,7 @@ public class LoanService : ILoanService
 
         if (loan.ReturnedAt > loan.DueDate)
         {
-            var daysOverdue = (loan.ReturnedAt.Value - loan.DueDate).Days;
-            loan.FineAmount = daysOverdue * 0.50m;
+            loan.FineAmount = CalculateFine(loan.ReturnedAt.Value, loan.DueDate);
 
             var member = await _memberRepository.GetByIdAsync(loan.MemberId);
             if (member != null)
@@ -122,5 +121,14 @@ public class LoanService : ILoanService
             ReturnedAt = l.ReturnedAt,
             FineAmount = l.FineAmount
         });
+    }
+
+    public static decimal CalculateFine(DateTime returnedAt, DateTime dueDate)
+    {
+        if (returnedAt <= dueDate)
+            return 0;
+
+        var daysOverdue = (returnedAt - dueDate).Days;
+        return daysOverdue * 0.50m;
     }
 }
