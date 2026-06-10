@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Services.Interfaces;
 using LibraryManagement.Services.DTOs;
+using LibraryManagement.Services.Exceptions;
 
 namespace LibraryManagement.API.Controllers;
 
@@ -23,9 +24,13 @@ public class BooksController : ControllerBase
             var book = await _bookService.CreateBookAsync(dto);
             return Created($"/api/books/{book.Id}", book);
         }
-        catch (InvalidOperationException ex)
+        catch (DuplicateIsbnException ex)
         {
             return Conflict(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 }

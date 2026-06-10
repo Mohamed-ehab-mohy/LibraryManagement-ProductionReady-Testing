@@ -117,6 +117,6 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
 
         var response = await client.PostAsJsonAsync("/api/books", dto);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

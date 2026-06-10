@@ -2,6 +2,7 @@ using LibraryManagement.Data.Repositories;
 using LibraryManagement.Data.Entities;
 using LibraryManagement.Services.Interfaces;
 using LibraryManagement.Services.DTOs;
+using LibraryManagement.Services.Exceptions;
 
 namespace LibraryManagement.Services.Implementations;
 
@@ -66,7 +67,7 @@ public class BookService : IBookService
 
         var existing = await _bookRepository.GetByISBNAsync(dto.ISBN);
         if (existing != null)
-            throw new InvalidOperationException("A book with this ISBN already exists.");
+            throw new DuplicateIsbnException();
 
         var book = new Book
         {
