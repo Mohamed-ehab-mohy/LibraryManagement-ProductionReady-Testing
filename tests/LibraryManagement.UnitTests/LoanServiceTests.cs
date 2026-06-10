@@ -170,4 +170,113 @@ public class LoanServiceTests
 
         (result.DueDate - result.BorrowedAt).Days.ShouldBe(14);
     }
+
+    [Fact]
+    public async Task ReturnBookAsync_WhenLoanNotFound_ThrowsKeyNotFoundException()
+    {
+        _loanRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>()))!.ReturnsAsync((Loan?)null);
+
+        var ex = await Should.ThrowAsync<KeyNotFoundException>(() => _sut.ReturnBookAsync(1));
+
+        ex.Message.ShouldBe("Loan not found.");
+    }
+
+    [Fact]
+    public async Task ReturnBookAsync_WhenAlreadyReturned_ThrowsAlreadyReturnedException()
+    {
+        var returnedLoan = new Loan
+        {
+            Id = 1,
+            BookId = 1,
+            MemberId = 1,
+            BorrowedAt = DateTime.UtcNow.AddDays(-10),
+            DueDate = DateTime.UtcNow.AddDays(4),
+            ReturnedAt = DateTime.UtcNow.AddDays(-5),
+            FineAmount = 0
+        };
+        _loanRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(returnedLoan);
+
+        await Should.ThrowAsync<AlreadyReturnedException>(() => _sut.ReturnBookAsync(1));
+    }
+
+    [Fact]
+    public async Task ReturnBookAsync_WhenReturnedOnTime_SetsNoFineAndIncrementsCopies()
+    {
+        var activeLoan = new Loan
+        {
+            Id = 1,
+            BookId = 1,
+            MemberId = 1,
+            BorrowedAt = DateTime.UtcNow.AddDays(-5),
+            DueDate = DateTime.UtcNow.AddDays(2),
+            ReturnedAt = null,
+            FineAmount = 0
+        };
+
+        _loanRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(activeLoan);
+
+        var result = await _sut.ReturnBookAsync(1);
+
+        result.LoanId.ShouldBe(1);
+        result.ReturnedAt.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(2));
+        result.FineAmount.ShouldBe(0);
+        result.IsOverdue.ShouldBeFalse();
+
+        _bookRepoMock.Verify(r => r.IncrementAvailableCopiesAsync(1), Times.Once);
+        _loanRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Loan>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReturnBookAsync_WhenReturnedOverdue_CalculatesFineAndUpdatesMember()
+    {
+        var dueDate = DateTime.UtcNow.AddDays(-5);
+        var activeLoan = new Loan
+        {
+            Id = 1,
+            BookId = 1,
+            MemberId = 1,
+            BorrowedAt = DateTime.UtcNow.AddDays(-19),
+            DueDate = dueDate,
+            ReturnedAt = null,
+            FineAmount = 0
+        };
+
+        _loanRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(activeLoan);
+        _memberRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(_validMember);
+
+        var result = await _sut.ReturnBookAsync(1);
+
+        result.LoanId.ShouldBe(1);
+        result.ReturnedAt.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(2));
+        result.FineAmount.ShouldBe(2.50m);
+        result.IsOverdue.ShouldBeTrue();
+
+        _validMember.OutstandingFine.ShouldBe(2.50m);
+        _memberRepoMock.Verify(r => r.UpdateAsync(_validMember), Times.Once);
+        _bookRepoMock.Verify(r => r.IncrementAvailableCopiesAsync(1), Times.Once);
+        _loanRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Loan>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReturnBookAsync_WhenReturnedOnDueDate_NoFine()
+    {
+        var dueDate = DateTime.UtcNow;
+        var activeLoan = new Loan
+        {
+            Id = 1,
+            BookId = 1,
+            MemberId = 1,
+            BorrowedAt = DateTime.UtcNow.AddDays(-14),
+            DueDate = dueDate,
+            ReturnedAt = null,
+            FineAmount = 0
+        };
+
+        _loanRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(activeLoan);
+
+        var result = await _sut.ReturnBookAsync(1);
+
+        result.FineAmount.ShouldBe(0);
+        result.IsOverdue.ShouldBeFalse();
+    }
 }
