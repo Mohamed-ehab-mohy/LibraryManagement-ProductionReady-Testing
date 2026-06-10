@@ -13,5 +13,7 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.Author).IsRequired();
         builder.Property(b => b.ISBN).IsRequired().HasMaxLength(13);
         builder.HasIndex(b => b.ISBN).IsUnique();
+        builder.ToTable(tb => tb.HasCheckConstraint("CK_Book_AvailableCopies_NonNegative", "[AvailableCopies] >= 0"));
+        builder.ToTable(tb => tb.HasCheckConstraint("CK_Book_AvailableCopies_NotExceedTotal", "[AvailableCopies] <= [TotalCopies]"));
     }
 }
