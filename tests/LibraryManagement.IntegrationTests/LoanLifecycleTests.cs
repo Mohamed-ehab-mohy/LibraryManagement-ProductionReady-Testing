@@ -19,16 +19,21 @@ public class LoanLifecycleTests : IClassFixture<LibraryWebAppFactory>
     public async Task BorrowBook_WithValidRequest_CreatesLoan()
     {
         var client = _factory.CreateClient();
-        var request = new BorrowRequestDto { MemberId = 1, BookId = 1 };
 
-        var response = await client.PostAsJsonAsync("/api/loans", request);
+        var book = await client.GetFromJsonAsync<List<BookDto>>("/api/books");
+        var startingCopies = book!.First(b => b.Id == 3).AvailableCopies;
+
+        var response = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = 3 });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         var loan = await response.Content.ReadFromJsonAsync<LoanDto>();
         loan.ShouldNotBeNull();
-        loan.BookId.ShouldBe(1);
+        loan.BookId.ShouldBe(3);
         loan.MemberId.ShouldBe(1);
         loan.ReturnedAt.ShouldBeNull();
+
+        var updated = await client.GetFromJsonAsync<BookDto>($"/api/books/3");
+        updated!.AvailableCopies.ShouldBe(startingCopies - 1);
     }
 
     [Fact]
@@ -36,15 +41,21 @@ public class LoanLifecycleTests : IClassFixture<LibraryWebAppFactory>
     {
         var client = _factory.CreateClient();
 
-        // borrowed all copies of book 1
-        for (int i = 0; i < 5; i++)
+        var created = await client.PostAsJsonAsync("/api/books", new CreateBookDto
         {
-            await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = 1 });
-        }
+            Title = "Single Copy Book",
+            Author = "Author",
+            ISBN = "1000000000001",
+            TotalCopies = 1
+        });
+        var book = await created.Content.ReadFromJsonAsync<BookDto>();
 
-        var response = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = 1 });
+        var firstBorrow = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = book!.Id });
+        firstBorrow.StatusCode.ShouldBe(HttpStatusCode.Created);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var secondBorrow = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = book.Id });
+
+        secondBorrow.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
@@ -52,7 +63,6 @@ public class LoanLifecycleTests : IClassFixture<LibraryWebAppFactory>
     {
         var client = _factory.CreateClient();
 
-        // borrow book 3 (AvailableCopies = 4) for member 2 (Sara)
         var borrowResponse = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 2, BookId = 3 });
         var loan = await borrowResponse.Content.ReadFromJsonAsync<LoanDto>();
         loan.ShouldNotBeNull();
@@ -98,27 +108,32 @@ public class LoanLifecycleTests : IClassFixture<LibraryWebAppFactory>
     {
         var client = _factory.CreateClient();
 
-        // check member
         var memberResponse = await client.GetAsync("/api/members/1");
         memberResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        // borrow
+        var book = await client.GetFromJsonAsync<BookDto>($"/api/books/2");
+        var copiesBeforeBorrow = book!.AvailableCopies;
+
         var borrowResponse = await client.PostAsJsonAsync("/api/loans", new BorrowRequestDto { MemberId = 1, BookId = 2 });
         borrowResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
         var loan = await borrowResponse.Content.ReadFromJsonAsync<LoanDto>();
         loan.ShouldNotBeNull();
 
-        // verify active loan appears
+        var afterBorrow = await client.GetFromJsonAsync<BookDto>($"/api/books/2");
+        afterBorrow!.AvailableCopies.ShouldBe(copiesBeforeBorrow - 1);
+
         var loansResponse = await client.GetAsync($"/api/loans?memberId={loan.MemberId}");
         var loans = await loansResponse.Content.ReadFromJsonAsync<List<LoanDto>>();
         loans.ShouldNotBeNull();
         loans.Any(l => l.Id == loan.Id && l.ReturnedAt == null).ShouldBeTrue();
 
-        // return
         var returnResponse = await client.PutAsJsonAsync($"/api/loans/{loan.Id}/return", new { });
         returnResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var result = await returnResponse.Content.ReadFromJsonAsync<ReturnResultDto>();
         result.ShouldNotBeNull();
         result.LoanId.ShouldBe(loan.Id);
+
+        var afterReturn = await client.GetFromJsonAsync<BookDto>($"/api/books/2");
+        afterReturn!.AvailableCopies.ShouldBe(copiesBeforeBorrow);
     }
 }
