@@ -144,8 +144,8 @@ public class LoanServiceTests
         result.BookId.ShouldBe(1);
         result.BookTitle.ShouldBe(_availableBook.Title);
         result.MemberId.ShouldBe(1);
-        result.BorrowedAt.ShouldBeGreaterThan(DateTime.UtcNow.AddMinutes(-1));
-        result.DueDate.ShouldBeGreaterThan(DateTime.UtcNow.AddDays(13));
+        result.BorrowedAt.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(2));
+        result.DueDate.ShouldBe(DateTime.UtcNow.AddDays(14), TimeSpan.FromSeconds(2));
         result.ReturnedAt.ShouldBeNull();
         result.FineAmount.ShouldBe(0);
 
