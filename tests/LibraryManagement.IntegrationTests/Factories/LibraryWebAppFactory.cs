@@ -59,6 +59,30 @@ public class LibraryWebAppFactory : WebApplicationFactory<Program>, IAsyncLifeti
         }
     }
 
+    public async Task ResetDatabaseAsync()
+    {
+        var options = new DbContextOptionsBuilder<LibraryDbContext>()
+            .UseSqlServer(_container.GetConnectionString())
+            .Options;
+
+        using var db = new LibraryDbContext(options);
+        db.Loans.RemoveRange(db.Loans);
+        db.Books.RemoveRange(db.Books);
+        db.Members.RemoveRange(db.Members);
+        await db.SaveChangesAsync();
+
+        db.Books.AddRange(
+            new Book { Title = "Clean Code", Author = "Robert C. Martin", ISBN = "9780132350884", TotalCopies = 5, AvailableCopies = 5 },
+            new Book { Title = "Clean Architecture", Author = "Robert C. Martin", ISBN = "9780134494166", TotalCopies = 3, AvailableCopies = 3 },
+            new Book { Title = "The Pragmatic Programmer", Author = "David Thomas", ISBN = "9780135957059", TotalCopies = 4, AvailableCopies = 4 }
+        );
+        db.Members.AddRange(
+            new Member { FullName = "Ahmed Ali", Email = "ahmed@test.com", MembershipExpiryDate = DateTime.UtcNow.AddMonths(6), OutstandingFine = 0 },
+            new Member { FullName = "Sara Hassan", Email = "sara@test.com", MembershipExpiryDate = DateTime.UtcNow.AddMonths(3), OutstandingFine = 0 }
+        );
+        await db.SaveChangesAsync();
+    }
+
     public new async Task DisposeAsync()
     {
         await _container.StopAsync();

@@ -6,21 +6,14 @@ using LibraryManagement.Services.DTOs;
 
 namespace LibraryManagement.IntegrationTests;
 
-public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
+public class BookEndpointsTests : IntegrationTestBase
 {
-    private readonly LibraryWebAppFactory _factory;
-
-    public BookEndpointsTests(LibraryWebAppFactory factory)
-    {
-        _factory = factory;
-    }
+    public BookEndpointsTests(LibraryWebAppFactory factory) : base(factory) { }
 
     [Fact]
     public async Task GetBooks_ReturnsAllBooks()
     {
-        var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/api/books");
+        var response = await Client.GetAsync("/api/books");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var books = await response.Content.ReadFromJsonAsync<List<BookDto>>();
@@ -31,9 +24,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task GetBooks_WithAvailableFilter_ReturnsOnlyAvailable()
     {
-        var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/api/books?available=true");
+        var response = await Client.GetAsync("/api/books?available=true");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var books = await response.Content.ReadFromJsonAsync<List<BookDto>>();
@@ -44,9 +35,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task GetBookById_WhenExists_ReturnsBook()
     {
-        var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/api/books/1");
+        var response = await Client.GetAsync("/api/books/1");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var book = await response.Content.ReadFromJsonAsync<BookDto>();
@@ -58,9 +47,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task GetBookById_WhenNotExists_ReturnsNotFound()
     {
-        var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/api/books/999");
+        var response = await Client.GetAsync("/api/books/999");
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -68,7 +55,6 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task CreateBook_ReturnsCreated()
     {
-        var client = _factory.CreateClient();
         var dto = new CreateBookDto
         {
             Title = "Test Driven Development",
@@ -77,7 +63,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
             TotalCopies = 2
         };
 
-        var response = await client.PostAsJsonAsync("/api/books", dto);
+        var response = await Client.PostAsJsonAsync("/api/books", dto);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         var book = await response.Content.ReadFromJsonAsync<BookDto>();
@@ -89,7 +75,6 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task CreateBook_WithDuplicateIsbn_ReturnsConflict()
     {
-        var client = _factory.CreateClient();
         var dto = new CreateBookDto
         {
             Title = "Duplicate",
@@ -98,7 +83,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
             TotalCopies = 1
         };
 
-        var response = await client.PostAsJsonAsync("/api/books", dto);
+        var response = await Client.PostAsJsonAsync("/api/books", dto);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -106,7 +91,6 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
     [Fact]
     public async Task CreateBook_WithInvalidTotalCopies_ReturnsConflict()
     {
-        var client = _factory.CreateClient();
         var dto = new CreateBookDto
         {
             Title = "Bad Book",
@@ -115,7 +99,7 @@ public class BookEndpointsTests : IClassFixture<LibraryWebAppFactory>
             TotalCopies = 0
         };
 
-        var response = await client.PostAsJsonAsync("/api/books", dto);
+        var response = await Client.PostAsJsonAsync("/api/books", dto);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
