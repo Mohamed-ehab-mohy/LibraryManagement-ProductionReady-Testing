@@ -279,4 +279,23 @@ public class LoanServiceTests
         result.FineAmount.ShouldBe(0);
         result.IsOverdue.ShouldBeFalse();
     }
+
+    [Theory]
+    [InlineData(2026, 6, 10, 2026, 6, 15, 0)]      // returned before due
+    [InlineData(2026, 6, 15, 2026, 6, 15, 0)]      // returned on due date
+    [InlineData(2026, 6, 16, 2026, 6, 15, 0.50)]   // 1 day late
+    [InlineData(2026, 6, 20, 2026, 6, 15, 2.50)]   // 5 days late
+    [InlineData(2026, 7, 15, 2026, 6, 15, 15.00)]  // 30 days late
+    public void CalculateFine_ReturnsCorrectAmount(
+        int retYear, int retMonth, int retDay,
+        int dueYear, int dueMonth, int dueDay,
+        decimal expectedFine)
+    {
+        var returnedAt = new DateTime(retYear, retMonth, retDay);
+        var dueDate = new DateTime(dueYear, dueMonth, dueDay);
+
+        var fine = LoanService.CalculateFine(returnedAt, dueDate);
+
+        fine.ShouldBe(expectedFine);
+    }
 }
