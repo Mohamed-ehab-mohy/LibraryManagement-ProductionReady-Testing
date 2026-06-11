@@ -1,4 +1,4 @@
-# LibraryManagement — Production-Ready Testing
+# LibraryManagement  -  Production-Ready Testing
 
 A .NET 10 Library Management API with comprehensive testing: unit, integration, load, architecture, mutation, and snapshot tests.
 
@@ -10,9 +10,9 @@ API (LibraryManagement.API)
         └── Data (LibraryManagement.Data)
 ```
 
-- **API** — Minimal API endpoints (`/api/books`, `/api/members`, `/api/loans`)
-- **Services** — Business logic (`BookService`, `MemberService`, `LoanService`)
-- **Data** — EF Core DbContext, entities, repositories, migrations (SQL Server)
+- **API**  -  Minimal API endpoints (`/api/books`, `/api/members`, `/api/loans`)
+- **Services**  -  Business logic (`BookService`, `MemberService`, `LoanService`)
+- **Data**  -  EF Core DbContext, entities, repositories, migrations (SQL Server)
 
 ## Tech Stack
 
@@ -83,7 +83,7 @@ Stryker.NET runs against `LibraryManagement.Services` targeting `LibraryManageme
 
 Minimum acceptable score: **75%** (configured in `stryker-config.json`).
 
-The current score of **81.82%** means 90 of 110 non-trivial mutants were killed. The 20 survivors are mainly default string values in DTOs and boundary equality mutations — many are equivalent mutants that cannot practically be killed.
+The current score of **81.82%** means 90 of 110 non-trivial mutants were killed. The 20 survivors are mainly default string values in DTOs and boundary equality mutations  -  many are equivalent mutants that cannot practically be killed.
 
 100% mutation score is not always the goal because:
 - Equivalent mutants (code changes that produce identical behaviour) inflate the denominator
@@ -92,8 +92,8 @@ The current score of **81.82%** means 90 of 110 non-trivial mutants were killed.
 
 ## Load Tests
 
-- **NBomber** — read + borrow scenarios with assertions, integrated as xUnit tests
-- **JMeter** — read-scenario + stress-test `.jmx` files
+- **NBomber**  -  read + borrow scenarios with assertions, integrated as xUnit tests
+- **JMeter**  -  read-scenario + stress-test `.jmx` files
 - See [`load-test-comparison.md`](./load-test-comparison.md) for full comparison
 
 ## Snapshot Tests

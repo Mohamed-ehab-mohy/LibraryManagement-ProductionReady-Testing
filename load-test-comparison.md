@@ -1,29 +1,29 @@
-# Load Test Comparison — NBomber vs JMeter
+# Load Test Comparison - NBomber vs JMeter
 
 ## Setup
 
 - **Endpoint:** `http://localhost:5041`
 - **NBomber scenarios:**
-  - `list_all_books` — GET /api/books, 100 req/s for 30 s
-  - `get_single_book` — GET /api/books/{id}, 50 req/s for 30 s
-  - `borrow_book` — POST /api/loans, 20 req/s for 60 s
+  - `list_all_books` - GET /api/books, 100 req/s for 30 s
+  - `get_single_book` - GET /api/books/{id}, 50 req/s for 30 s
+  - `borrow_book` - POST /api/loans, 20 req/s for 60 s
 - **JMeter scenarios:**
-  - `read-scenario.jmx` — 50 threads, ramp-up 10 s, loop 10
-  - `stress-test.jmx` — progressive ramp-up stress test
+  - `read-scenario.jmx` - 50 threads, ramp-up 10 s, loop 10
+  - `stress-test.jmx` - progressive ramp-up stress test
 
 ## Results
 
 | Metric              | NBomber | JMeter |
 |---------------------|---------|--------|
-| Total requests      | —       | —      |
-| Throughput (req/s)  | —       | —      |
-| Average latency     | —       | —      |
-| Min latency         | —       | —      |
-| Max latency         | —       | —      |
-| p50 (median)        | —       | —      |
-| p95                 | —       | —      |
-| p99                 | —       | —      |
-| Error rate (%)      | —       | —      |
+| Total requests      | -       | -      |
+| Throughput (req/s)  | -       | -      |
+| Average latency     | -       | -      |
+| Min latency         | -       | -      |
+| Max latency         | -       | -      |
+| p50 (median)        | -       | -      |
+| p95                 | -       | -      |
+| p99                 | -       | -      |
+| Error rate (%)      | -       | -      |
 
 <!-- Run both tools against the same environment and fill in the table above. -->
 
@@ -36,7 +36,7 @@ NBomber gives richer built-in percentile reporting (p50, p95, p99) and is direct
 ## CI/CD Recommendation
 
 NBomber is the better fit for CI/CD because:
-- It runs as a `dotnet test` alongside other test projects — no extra runtime or GUI needed
+- It runs as a `dotnet test` alongside other test projects - no extra runtime or GUI needed
 - Assertions (e.g., p99 < 300 ms, zero failures) are written in C# and enforced at build time
 - Reports are generated as HTML in the pipeline artifacts
 
