@@ -1,32 +1,28 @@
+using System.Net.Http.Json;
 using NBomber.CSharp;
-using NBomber.Http.CSharp;
 using Shouldly;
 
 namespace LibraryManagement.LoadTests;
 
 public class BorrowScenarioTests
 {
+    private static readonly HttpClient Client = new() { BaseAddress = new Uri("http://localhost:5041") };
+
     [Fact]
     public async Task BorrowScenario_should_have_zero_500_errors()
     {
-        using var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5041") };
-
         var borrowBook = Scenario.Create("borrow_book", async ctx =>
         {
             var memberId = Random.Shared.Next(1, 201);
             var bookId = Random.Shared.Next(1, 51);
 
-            var body = new { memberId, bookId };
-            using var request = Http.CreateRequest("POST", "/api/loans")
-                .WithJsonBody(body);
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/loans")
+            {
+                Content = JsonContent.Create(new { memberId, bookId })
+            };
 
-            var response = await Http.Send(httpClient, request);
-
-            if (response.IsError)
-                return Response.Fail(statusCode: response.StatusCode, message: response.Message);
-
-            var httpResponse = response.Payload.Value;
-            var statusCode = (int)httpResponse.StatusCode;
+            var response = await Client.SendAsync(request);
+            var statusCode = (int)response.StatusCode;
 
             if (statusCode >= 500)
                 return Response.Fail(statusCode: statusCode.ToString(), message: "Server error");

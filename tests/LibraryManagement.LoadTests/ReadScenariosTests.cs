@@ -1,24 +1,23 @@
 using NBomber.CSharp;
-using NBomber.Http.CSharp;
 using Shouldly;
 
 namespace LibraryManagement.LoadTests;
 
 public class ReadScenariosTests
 {
+    private static readonly HttpClient Client = new() { BaseAddress = new Uri("http://localhost:5041") };
+
     [Fact]
     public async Task ReadScenarios_should_meet_latency_targets()
     {
-        using var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5041") };
-
         var listAllBooks = Scenario.Create("list_all_books", async ctx =>
         {
-            using var request = Http.CreateRequest("GET", "/api/books");
-            var response = await Http.Send(httpClient, request);
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/books");
+            var response = await Client.SendAsync(request);
 
-            return response.IsError
-                ? Response.Fail()
-                : Response.Ok();
+            return response.IsSuccessStatusCode
+                ? Response.Ok()
+                : Response.Fail();
         })
         .WithLoadSimulations(
             Simulation.Inject(rate: 100, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(30))
@@ -27,12 +26,12 @@ public class ReadScenariosTests
         var getSingleBook = Scenario.Create("get_single_book", async ctx =>
         {
             var bookId = Random.Shared.Next(1, 51);
-            using var request = Http.CreateRequest("GET", $"/api/books/{bookId}");
-            var response = await Http.Send(httpClient, request);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/books/{bookId}");
+            var response = await Client.SendAsync(request);
 
-            return response.IsError
-                ? Response.Fail()
-                : Response.Ok();
+            return response.IsSuccessStatusCode
+                ? Response.Ok()
+                : Response.Fail();
         })
         .WithLoadSimulations(
             Simulation.Inject(rate: 50, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(30))
