@@ -1,0 +1,13 @@
+{
+  "stryker-config": {
+    "test-projects": [
+      "tests/LibraryManagement.UnitTests/LibraryManagement.UnitTests.csproj"
+    ],
+    "project": "src/LibraryManagement.Services/LibraryManagement.Services.csproj",
+    "thresholds": {
+      "high": 80,
+      "low": 75,
+      "break": 0
+    }
+  }
+}

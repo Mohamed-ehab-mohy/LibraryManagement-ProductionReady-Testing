@@ -298,4 +298,66 @@ public class LoanServiceTests
 
         fine.ShouldBe(expectedFine);
     }
+
+    [Fact]
+    public async Task GetMemberLoansAsync_ReturnsLoansForMember()
+    {
+        var loans = new List<Loan>
+        {
+            new()
+            {
+                Id = 1, BookId = 1, MemberId = 1,
+                BorrowedAt = DateTime.UtcNow.AddDays(-10),
+                DueDate = DateTime.UtcNow.AddDays(4),
+                ReturnedAt = null, FineAmount = 0,
+                Book = new Book { Id = 1, Title = "Clean Code", Author = "Martin", ISBN = "9780132350884", TotalCopies = 5, AvailableCopies = 3 }
+            },
+            new()
+            {
+                Id = 2, BookId = 2, MemberId = 1,
+                BorrowedAt = DateTime.UtcNow.AddDays(-20),
+                DueDate = DateTime.UtcNow.AddDays(-6),
+                ReturnedAt = DateTime.UtcNow.AddDays(-5), FineAmount = 2.50m,
+                Book = new Book { Id = 2, Title = "TDD", Author = "Beck", ISBN = "9780321146533", TotalCopies = 2, AvailableCopies = 2 }
+            }
+        };
+        _loanRepoMock.Setup(r => r.GetByMemberIdAsync(1)).ReturnsAsync(loans);
+
+        var result = await _sut.GetMemberLoansAsync(1);
+
+        result.Count().ShouldBe(2);
+        result.First().BookTitle.ShouldBe("Clean Code");
+        result.Last().BookTitle.ShouldBe("TDD");
+    }
+
+    [Fact]
+    public async Task GetMemberLoansAsync_WhenBookIsNull_UsesDefaultTitle()
+    {
+        var loans = new List<Loan>
+        {
+            new()
+            {
+                Id = 1, BookId = 1, MemberId = 1,
+                BorrowedAt = DateTime.UtcNow.AddDays(-10),
+                DueDate = DateTime.UtcNow.AddDays(4),
+                ReturnedAt = null, FineAmount = 0,
+                Book = null!
+            }
+        };
+        _loanRepoMock.Setup(r => r.GetByMemberIdAsync(1)).ReturnsAsync(loans);
+
+        var result = await _sut.GetMemberLoansAsync(1);
+
+        result.Single().BookTitle.ShouldBe("Unknown");
+    }
+
+    [Fact]
+    public async Task GetMemberLoansAsync_WhenNoLoans_ReturnsEmpty()
+    {
+        _loanRepoMock.Setup(r => r.GetByMemberIdAsync(1)).ReturnsAsync(new List<Loan>());
+
+        var result = await _sut.GetMemberLoansAsync(1);
+
+        result.ShouldBeEmpty();
+    }
 }
