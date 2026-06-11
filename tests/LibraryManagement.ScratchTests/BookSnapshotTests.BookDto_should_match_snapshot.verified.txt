@@ -1,0 +1,8 @@
+﻿{
+  Id: 1,
+  Title: Clean Code,
+  Author: Robert C. Martin,
+  ISBN: 9780132350884,
+  TotalCopies: 5,
+  AvailableCopies: 3
+}
