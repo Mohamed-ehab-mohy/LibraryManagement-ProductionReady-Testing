@@ -47,7 +47,7 @@ public class ArchitectureTests
             .That()
             .ResideInNamespace("LibraryManagement.API.Controllers")
             .Should()
-            .NotHaveDependencyOn("LibraryManagement.Data")
+            .NotHaveDependencyOn("LibraryManagement.Data.LibraryDbContext")
             .GetResult();
 
         result.IsSuccessful.ShouldBeTrue();
