@@ -478,5 +478,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# JMeter generated files
+jmeter/*.jtl
+jmeter/report/
+jmeter/stress-report/
+
 # Vim temporary swap files
 *.swp

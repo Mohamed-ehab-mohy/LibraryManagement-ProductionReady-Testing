@@ -12,17 +12,30 @@
 
 ## Results
 
-| Metric              | NBomber | JMeter |
-|---------------------|---------|--------|
-| Total requests      | 4500    | -      |
-| Throughput (req/s)  | 150     | -      |
-| Average latency     | ~15 ms  | -      |
-| Min latency         | ~1 ms   | -      |
-| Max latency         | ~1900 ms| -      |
-| p50 (median)        | ~3 ms   | -      |
-| p95                 | ~30 ms  | -      |
-| p99                 | ~1200 ms| -      |
-| Error rate (%)      | 0       | -      |
+| Metric              | NBomber (read-scenarios) | JMeter (read-scenario) |
+|---------------------|--------------------------|------------------------|
+| Total requests      | 4500                     | 1000                   |
+| Throughput (req/s)  | 150                      | 100                    |
+| Average latency     | ~15 ms                   | 4 ms                   |
+| Min latency         | ~1 ms                    | 2 ms                   |
+| Max latency         | ~1900 ms                 | 59 ms                  |
+| p50 (median)        | ~3 ms                    | 4 ms                   |
+| p95                 | ~30 ms                   | 6 ms                   |
+| p99                 | ~1200 ms                 | 8 ms                   |
+| Error rate (%)      | 0                        | 0                      |
+
+### JMeter Stress Test (progressive ramp-up)
+
+| Metric             | Value     |
+|--------------------|-----------|
+| Total requests     | 848,773   |
+| Throughput (req/s) | ~3000     |
+| Average latency    | 52 ms     |
+| Min latency        | 1 ms      |
+| Max latency        | 482 ms    |
+| Error rate (%)     | 0         |
+
+The progressive ramp-up stress test scaled from 17 to 200 concurrent threads over 5 minutes, saturating the API at ~3000 req/s with zero failures. This demonstrates the API's capacity well beyond typical load.
 
 ## Analysis
 
