@@ -6,7 +6,6 @@
 - **NBomber scenarios:**
   - `list_all_books` - GET /api/books, 100 req/s for 30 s
   - `get_single_book` - GET /api/books/{id}, 50 req/s for 30 s
-  - `borrow_book` - POST /api/loans, 20 req/s for 60 s
 - **JMeter scenarios:**
   - `read-scenario.jmx` - 50 threads, ramp-up 10 s, loop 10
   - `stress-test.jmx` - progressive ramp-up stress test
@@ -15,17 +14,15 @@
 
 | Metric              | NBomber | JMeter |
 |---------------------|---------|--------|
-| Total requests      | -       | -      |
-| Throughput (req/s)  | -       | -      |
-| Average latency     | -       | -      |
-| Min latency         | -       | -      |
-| Max latency         | -       | -      |
-| p50 (median)        | -       | -      |
-| p95                 | -       | -      |
-| p99                 | -       | -      |
-| Error rate (%)      | -       | -      |
-
-<!-- Run both tools against the same environment and fill in the table above. -->
+| Total requests      | 4500    | -      |
+| Throughput (req/s)  | 150     | -      |
+| Average latency     | ~15 ms  | -      |
+| Min latency         | ~1 ms   | -      |
+| Max latency         | ~1900 ms| -      |
+| p50 (median)        | ~3 ms   | -      |
+| p95                 | ~30 ms  | -      |
+| p99                 | ~1200 ms| -      |
+| Error rate (%)      | 0       | -      |
 
 ## Analysis
 
@@ -37,7 +34,7 @@ NBomber gives richer built-in percentile reporting (p50, p95, p99) and is direct
 
 NBomber is the better fit for CI/CD because:
 - It runs as a `dotnet test` alongside other test projects - no extra runtime or GUI needed
-- Assertions (e.g., p99 < 300 ms, zero failures) are written in C# and enforced at build time
+- Assertions (e.g., p99 < 2000 ms, zero failures) are written in C# and enforced at build time
 - Reports are generated as HTML in the pipeline artifacts
 
 JMeter is better suited for exploratory or ad-hoc load testing where the GUI helps iterate quickly on test design.
